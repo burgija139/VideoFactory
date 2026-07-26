@@ -1,0 +1,31 @@
+services:
+  videofactory:
+    build:
+      context: ..
+      dockerfile: ci_cd/Dockerfile
+
+    container_name: videofactory
+
+    env_file:
+      - ../.env
+
+    volumes:
+      - ../shorts/chess:/app/shorts/chess
+
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+
+    container_name: jenkins
+
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins_home:

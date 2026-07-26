@@ -1,0 +1,18 @@
+# CORE VIDEO ENGINE
+python-chess
+Pillow
+cairosvg
+numpy
+
+# AI (Gemini)
+google-genai
+pydantic
+
+# DATABASE
+psycopg2-binary
+
+# GRADIO
+gradio_client
+
+# ENV / CONFIG (optional but common)
+python-dotenv

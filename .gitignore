@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Secrets
+.env
+
+# Generated files
+temp_audio/
+shorts/
+
+# IDE
+.vscode/
+.idea/
