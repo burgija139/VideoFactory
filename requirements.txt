@@ -11,8 +11,11 @@ pydantic
 # DATABASE
 psycopg2-binary
 
-# GRADIO
+# TTS
 gradio_client
 
-# ENV / CONFIG (optional but common)
+# ENV / CONFIG
 python-dotenv
+
+# TESTING
+pytest
