@@ -2,21 +2,22 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Tests') {
-            steps {
-                sh 'python3.11 -m pytest'
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 sh 'docker build -f ci_cd/Dockerfile -t videofactory .'
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                sh 'docker run --rm videofactory python3.11 -m pytest'
             }
         }
     }
