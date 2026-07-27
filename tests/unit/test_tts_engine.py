@@ -1,4 +1,3 @@
-```python
 import wave
 from unittest.mock import patch
 
@@ -49,13 +48,10 @@ def test_tts_engine_synthesizes_audio(tmp_path):
         )
 
         client = client_class.return_value
-
         client.predict.return_value = str(generated)
 
         subprocess_run.return_value.returncode = 0
 
-        # Mockovani FFmpeg ne pravi stvarni output,
-        # pa ga kreiramo ručno za potrebe testa.
         create_wav(output)
 
         engine = TTSEngine()
@@ -102,4 +98,3 @@ def test_tts_engine_rejects_unknown_voice(tmp_path):
             assert False
         except ValueError as error:
             assert "Voice sample not found" in str(error)
-```

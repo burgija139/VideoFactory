@@ -18,8 +18,6 @@ def create_provider(tmp_path):
     provider.cache_dir = tmp_path
     provider.cache_file = tmp_path / "tts_url_cache.txt"
 
-    # NtfyClient zamenjujemo mockom kako bismo
-    # kontrolisali njegov odgovor bez pravog ntfy poziva.
     provider.ntfy = MagicMock()
 
     return provider
