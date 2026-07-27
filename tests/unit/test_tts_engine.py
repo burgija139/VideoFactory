@@ -1,5 +1,6 @@
+```python
 import wave
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from infrastructure.tts.tts_engine import TTSEngine
 
@@ -15,8 +16,16 @@ def create_wav(path):
 def test_tts_engine_synthesizes_audio(tmp_path):
     generated = tmp_path / "generated.wav"
     output = tmp_path / "output.wav"
+    reference_audio = tmp_path / "reference.wav"
+    reference_text = tmp_path / "reference.txt"
 
     create_wav(generated)
+    create_wav(reference_audio)
+
+    reference_text.write_text(
+        "reference voice",
+        encoding="utf-8"
+    )
 
     with patch(
         "infrastructure.tts.tts_engine.VoiceRegistry"
@@ -31,14 +40,9 @@ def test_tts_engine_synthesizes_audio(tmp_path):
         registry = registry_class.return_value
 
         registry.get_voice.return_value = {
-            "audio": tmp_path / "reference.wav",
-            "text": tmp_path / "reference.txt"
+            "audio": reference_audio,
+            "text": reference_text
         }
-
-        (tmp_path / "reference.txt").write_text(
-            "reference voice",
-            encoding="utf-8"
-        )
 
         provider_class.return_value.get_url.return_value = (
             "https://test.gradio.live"
@@ -50,8 +54,8 @@ def test_tts_engine_synthesizes_audio(tmp_path):
 
         subprocess_run.return_value.returncode = 0
 
-        # Pošto mockovani ffmpeg ne pravi fajl,
-        # napravimo očekivani output ručno.
+        # Mockovani FFmpeg ne pravi stvarni output,
+        # pa ga kreiramo ručno za potrebe testa.
         create_wav(output)
 
         engine = TTSEngine()
@@ -98,3 +102,4 @@ def test_tts_engine_rejects_unknown_voice(tmp_path):
             assert False
         except ValueError as error:
             assert "Voice sample not found" in str(error)
+```

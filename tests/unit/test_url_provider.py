@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,6 +18,10 @@ def create_provider(tmp_path):
     provider.cache_dir = tmp_path
     provider.cache_file = tmp_path / "tts_url_cache.txt"
 
+    # NtfyClient zamenjujemo mockom kako bismo
+    # kontrolisali njegov odgovor bez pravog ntfy poziva.
+    provider.ntfy = MagicMock()
+
     return provider
 
 
@@ -31,8 +34,6 @@ def test_url_provider_reads_cached_url(tmp_path):
         url,
         encoding="utf-8"
     )
-
-    provider.ntfy = MagicMock()
 
     assert provider.get_url() == url
 
