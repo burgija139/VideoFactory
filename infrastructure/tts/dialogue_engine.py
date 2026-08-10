@@ -1,13 +1,14 @@
 import os
-from typing import List
+
 from plugins.chess.dto.audio_item import AudioItem
 from plugins.chess.dto.video_plan import VideoPlan
+
 
 class DialogueEngine:
     def __init__(self, tts_engine):
         self.tts = tts_engine
 
-    def build_dialogue(self, video_plan: VideoPlan, output_dir: str = "temp_audio") -> List[AudioItem]:
+    def build_dialogue(self, video_plan: VideoPlan, output_dir: str = "temp_audio") -> list[AudioItem]:
         os.makedirs(output_dir, exist_ok=True)
         audio_plan = []
 
@@ -42,6 +43,6 @@ class DialogueEngine:
                 
             except Exception as e:
                 print(f"[❌ DialogueEngine] Greška prilikom generisanja linije {index}: {e}")
-                raise e
+                raise 
 
         return audio_plan

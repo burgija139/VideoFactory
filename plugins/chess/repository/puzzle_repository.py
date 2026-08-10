@@ -1,5 +1,7 @@
 import random
+
 from infrastructure.db.db_context import DBContext
+
 
 class PuzzleRepository:
     def __init__(self):

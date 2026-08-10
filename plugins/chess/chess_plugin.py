@@ -1,8 +1,8 @@
 # plugins/chess/chess_plugin.py
 from core.plugin_system.base_plugin import BasePlugin
+from infrastructure.tts.dialogue_engine import DialogueEngine
 from plugins.chess.service.chess_service import ChessService
 from plugins.chess.video.chess_video_builder import ChessVideoBuilder
-from infrastructure.tts.dialogue_engine import DialogueEngine
 
 
 class ChessPlugin(BasePlugin):

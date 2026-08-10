@@ -1,5 +1,6 @@
-import subprocess
 import os
+import subprocess
+
 
 class F5Engine:
 
@@ -35,7 +36,8 @@ class F5Engine:
         result = subprocess.run(
             command,
             capture_output=True,
-            text=True
+            text=True,
+            check=False
         )
 
         if result.returncode != 0:
@@ -58,8 +60,8 @@ class F5Engine:
             temp_volume_file
         ]
 
-        print(f"[🔊 Volume Control] Utišavam generisani glas na 30% jačine...")
-        ffmpeg_result = subprocess.run(ffmpeg_command, capture_output=True, text=True)
+        print("[🔊 Volume Control] Utišavam generisani glas na 30% jačine...")
+        ffmpeg_result = subprocess.run(ffmpeg_command, capture_output=True, text=True, check=False)
 
         if ffmpeg_result.returncode == 0:
             # Ako je ffmpeg uspešno odradio posao, zamenimo originalni fajl utišanim

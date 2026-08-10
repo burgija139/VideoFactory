@@ -19,3 +19,5 @@ python-dotenv
 
 # TESTING
 pytest
+pytest-cov
+ruff

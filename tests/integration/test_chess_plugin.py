@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 from plugins.chess.chess_plugin import ChessPlugin
 from plugins.chess.dto.puzzle_dto import PuzzleDTO
-from plugins.chess.dto.video_plan import VideoPlan
 from plugins.chess.dto.timeline_item import TimelineItem
+from plugins.chess.dto.video_plan import VideoPlan
 
 
 def create_content():

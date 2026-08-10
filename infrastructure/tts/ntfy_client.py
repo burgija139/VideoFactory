@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 
 class NtfyClient:
@@ -67,7 +68,7 @@ class NtfyClient:
             return messages[-1]
 
 
-        except Exception as e:
+        except requests.RequestException as e:
 
             print(
                 f"[⚠️ Ntfy] Ne mogu da pročitam kanal: {e}"

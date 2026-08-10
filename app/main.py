@@ -1,5 +1,6 @@
 # main.py
 from dotenv import load_dotenv
+
 from core.pipeline.pipeline_runner import PipelineRunner
 
 # Uvozimo samo TTSEngine, jer on sada samostalno sve radi u pozadini

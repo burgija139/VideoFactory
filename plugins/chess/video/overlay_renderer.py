@@ -1,7 +1,7 @@
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import io
 import textwrap
 
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
 class OverlayRenderer:
@@ -29,7 +29,7 @@ class OverlayRenderer:
                 80
             )
 
-        except:
+        except OSError:
 
             self.title_font = ImageFont.load_default()
             self.rating_font = ImageFont.load_default()

@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from plugins.chess.dto.video_plan import VideoPlan
 from plugins.chess.dto.timeline_item import TimelineItem
+from plugins.chess.dto.video_plan import VideoPlan
 
 
 def make_timeline():

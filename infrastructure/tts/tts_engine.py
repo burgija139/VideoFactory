@@ -7,14 +7,13 @@ from pathlib import Path
 
 from gradio_client import Client, handle_file
 
-from infrastructure.tts.voice_registry import VoiceRegistry
 from infrastructure.tts.url_provider import UrlProvider
+from infrastructure.tts.voice_registry import VoiceRegistry
 
 
 class TTSEngine:
 
     def __init__(self):
-
         self.registry = VoiceRegistry()
         self.url_provider = UrlProvider()
 
@@ -24,7 +23,6 @@ class TTSEngine:
         self._connect()
 
     def _connect(self, force_refresh: bool = False):
-
         if force_refresh:
             self.server_url = self.url_provider.refresh_url()
         else:
@@ -35,33 +33,27 @@ class TTSEngine:
         try:
             self.client = Client(self.server_url)
 
-        except Exception as e:
-
+        except Exception:
             if force_refresh:
-                raise e
+                raise
 
             print("[⚠️ Cache URL nije validan. Tražim novi...")
 
             self.server_url = self.url_provider.refresh_url()
-
             self.client = Client(self.server_url)
 
     def _reconnect(self):
-
         print("[🔄 TTS] Ponovno povezivanje...")
 
         for attempt in range(5):
-
             try:
-
                 self._connect(force_refresh=True)
 
                 print("[✅ TTS] Ponovo povezan.")
 
                 return
 
-            except Exception as e:
-
+            except Exception as e:  # noqa: BLE001
                 print(
                     f"[⚠️ Reconnect {attempt + 1}/5] {e}"
                 )
@@ -79,7 +71,6 @@ class TTSEngine:
         text: str,
         output_path: str,
     ):
-
         output_path = str(Path(output_path).resolve())
 
         voice = self.registry.get_voice(
@@ -92,7 +83,6 @@ class TTSEngine:
             "r",
             encoding="utf-8"
         ) as f:
-
             ref_text = f.read()
 
         print(
@@ -102,48 +92,32 @@ class TTSEngine:
         result = None
 
         for attempt in range(2):
-
             try:
-
                 result = self.client.predict(
-
                     ref_audio_input=handle_file(
                         str(voice["audio"])
                     ),
-
                     ref_text_input=ref_text,
-
                     gen_text_input=text,
-
                     remove_silence=True,
-
                     randomize_seed=True,
-
                     seed_input=0,
-
                     cross_fade_duration_slider=0.15,
-
                     nfe_slider=32,
-
                     speed_slider=1.0,
-
                     api_name="/basic_tts",
                 )
 
                 break
 
             except Exception as e:
-
                 print(
                     f"[⚠️ Predict greška {attempt + 1}/2] {e}"
                 )
 
                 if attempt == 0:
-
                     self._reconnect()
-
                 else:
-
                     raise
 
         if isinstance(result, (list, tuple)):
@@ -178,10 +152,10 @@ class TTSEngine:
             ],
             capture_output=True,
             text=True,
+            check=False,
         )
 
         if ffmpeg.returncode != 0:
-
             print(
                 "[⚠️ FFmpeg nije uspeo. Kopiram original."
             )
@@ -201,9 +175,7 @@ class TTSEngine:
         }
 
     def _get_duration(self, path):
-
         with wave.open(path, "rb") as wav:
-
             frames = wav.getnframes()
             rate = wav.getframerate()
 

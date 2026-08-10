@@ -1,5 +1,7 @@
 from typing import Literal
+
 from pydantic import BaseModel, Field
+
 
 class TimelineItem(BaseModel):
     time: float = Field(description="Absolute time in seconds when the text appears on screen and when the voiceover starts.")

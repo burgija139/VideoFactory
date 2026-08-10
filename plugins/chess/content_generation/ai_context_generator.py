@@ -1,8 +1,11 @@
 import os
-import time
 import random
+import time
+
 from google import genai
-from plugins.chess.dto.video_plan import VideoPlan 
+
+from plugins.chess.dto.video_plan import VideoPlan
+
 
 class AIContextGenerator:
 
@@ -99,8 +102,9 @@ class AIContextGenerator:
 
                 # Parsiramo i validiramo nazad u Pydantic model
                 plan = VideoPlan.model_validate_json(response.text)
-                
-                # Dodatna softverska garancija da se poklapaju pre-generisane odluke sa JSON-om
+
+                # Dodatna softverska garancija da se poklapaju
+                # pre-generisane odluke sa JSON-om
                 plan.show_moves = show_moves_decision
                 plan.timer_enabled = force_timer_decision
                 plan.timer_duration = timer_duration_val
@@ -111,10 +115,25 @@ class AIContextGenerator:
             except Exception as e:
                 status_code = getattr(e, "status_code", None)
                 error_msg = str(e).lower()
-                if status_code == 503 or "high demand" in error_msg or "unavailable" in error_msg:
+
+                if (
+                    status_code == 503
+                    or "high demand" in error_msg
+                    or "unavailable" in error_msg
+                ):
                     attempt += 1
+
+                    if attempt >= max_retries:
+                        raise
+
                     wait_time = attempt * 5
-                    print(f"[Gemini 503] Server busy... Retrying in {wait_time}s...")
+
+                    print(
+                        f"[Gemini 503] Server busy... "
+                        f"Retrying in {wait_time}s..."
+                    )
+
                     time.sleep(wait_time)
                     continue
-                raise e
+
+                raise

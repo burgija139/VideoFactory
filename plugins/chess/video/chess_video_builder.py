@@ -1,11 +1,12 @@
-import subprocess
-import chess
 import os
-from typing import List
+import subprocess
+
+import chess
+
+from plugins.chess.audio.move_audio_builder import MoveAudioBuilder
 from plugins.chess.dto.audio_item import AudioItem
 from plugins.chess.video.board_renderer import BoardRenderer
 from plugins.chess.video.overlay_renderer import OverlayRenderer
-from plugins.chess.audio.move_audio_builder import MoveAudioBuilder
 
 
 class ChessVideoBuilder:
@@ -15,7 +16,7 @@ class ChessVideoBuilder:
         self.overlay_renderer = OverlayRenderer()
         self.move_audio_builder = MoveAudioBuilder(sounds_path)
 
-    def create(self, context, audio_plan: List[AudioItem], output_file="final.mp4"):
+    def create(self, context, audio_plan: list[AudioItem], output_file="final.mp4"):
         # =====================================
         # EXTRACT CONTEXT & SETUP TIMELINE
         # =====================================
@@ -37,7 +38,6 @@ class ChessVideoBuilder:
             output_file = os.path.join(output_dir, output_file)
         # ===============================================
 
-        board = chess.Board(puzzle.fen)
         move_list = puzzle.moves.split()
 
         fps = 30

@@ -1,8 +1,8 @@
-from plugins.chess.repository.puzzle_repository import PuzzleRepository
-from plugins.chess.dto.puzzle_dto import PuzzleDTO
-from plugins.chess.service.puzzle_classifier import PuzzleClassifier
-from plugins.chess.dto.video_conteext import VideoContext
 from plugins.chess.content_generation.ai_context_generator import AIContextGenerator
+from plugins.chess.dto.puzzle_dto import PuzzleDTO
+from plugins.chess.dto.video_conteext import VideoContext
+from plugins.chess.repository.puzzle_repository import PuzzleRepository
+from plugins.chess.service.puzzle_classifier import PuzzleClassifier
 
 
 class ChessService:

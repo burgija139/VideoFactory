@@ -1,6 +1,9 @@
-from typing import List, Literal
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
 from plugins.chess.dto.timeline_item import TimelineItem
+
 
 class VideoPlan(BaseModel):
     title: str = Field(default="Chess Puzzle")
@@ -9,7 +12,7 @@ class VideoPlan(BaseModel):
         description="Number of characters. If show_moves is False, this MUST be '1' (Solo Narrator contacting the audience)."
     )
 
-    timeline: List[TimelineItem]
+    timeline: list[TimelineItem]
 
     intro_seconds: int = Field(
         default=5,

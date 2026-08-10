@@ -1,6 +1,8 @@
-import numpy as np
-import wave
 import os
+import wave
+
+import numpy as np
+
 
 class MoveAudioBuilder:
     def __init__(self, sounds_path="assets/sounds"):
@@ -60,8 +62,7 @@ class MoveAudioBuilder:
         for event in events:
             start_sample = int(event["time"] * self.sample_rate)
             # Sigurnosna provera granica
-            if start_sample < 0:
-                start_sample = 0
+            start_sample = max(start_sample, 0)
                 
             sound = self.sounds.get(event["type"])
             if sound is None: 
@@ -89,8 +90,7 @@ class MoveAudioBuilder:
                 sound = np.frombuffer(data, dtype=np.int16).astype(np.float32)
             
             start_sample = int(item.start * self.sample_rate)
-            if start_sample < 0:
-                start_sample = 0
+            start_sample = max(start_sample, 0)
                 
             end_sample = start_sample + len(sound)
             

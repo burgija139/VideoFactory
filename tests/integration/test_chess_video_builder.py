@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, patch
 
-from plugins.chess.video.chess_video_builder import ChessVideoBuilder
 from plugins.chess.dto.puzzle_dto import PuzzleDTO
-from plugins.chess.dto.video_plan import VideoPlan
 from plugins.chess.dto.timeline_item import TimelineItem
+from plugins.chess.dto.video_plan import VideoPlan
+from plugins.chess.video.chess_video_builder import ChessVideoBuilder
 
 
 def create_context():

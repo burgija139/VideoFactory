@@ -17,8 +17,26 @@ pipeline {
 
         stage('Tests') {
             steps {
-                sh 'docker run --rm videofactory python3.11 -m pytest'
+                sh '''
+                    docker run --rm videofactory \
+                    python3.11 -m pytest \
+                    --cov=. \
+                    --cov-report=term-missing \
+                    --cov-fail-under=70
+                '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI pipeline uspešno završen.'
+            echo 'Docker image je uspešno napravljen, svi testovi su prošli i coverage je najmanje 70%.'
+        }
+
+        failure {
+            echo 'CI pipeline neuspešan.'
+            echo 'Proveri Docker build, testove ili code coverage.'
         }
     }
 }

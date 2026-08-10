@@ -1,8 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from plugins.chess.content_generation.ai_context_generator import (
-    AIContextGenerator
-)
+from plugins.chess.content_generation.ai_context_generator import AIContextGenerator
 from plugins.chess.dto.puzzle_dto import PuzzleDTO
 
 

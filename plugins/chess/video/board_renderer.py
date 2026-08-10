@@ -1,7 +1,8 @@
+import io
+
 import chess.svg
 from cairosvg import svg2png
 from PIL import Image, ImageDraw, ImageFont
-import io
 
 
 class BoardRenderer:
@@ -10,7 +11,7 @@ class BoardRenderer:
 
         try:
             self.font = ImageFont.truetype("DejaVuSans.ttf", 28)
-        except:
+        except OSError:
             self.font = ImageFont.load_default()
 
     def render(self, board, last_move=None):
@@ -28,7 +29,7 @@ class BoardRenderer:
 
         draw = ImageDraw.Draw(img)
 
-        width, height = img.size
+        width, _ = img.size
         square = width // 8
 
         letters = "abcdefgh"

@@ -1,6 +1,7 @@
 # core/plugin_system/base_plugin.py
 from abc import ABC, abstractmethod
 
+
 class BasePlugin(ABC):
 
     def __init__(self, tts_engine):
