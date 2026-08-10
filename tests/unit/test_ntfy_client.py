@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import requests
+
 from infrastructure.tts.ntfy_client import NtfyClient
 
 
@@ -53,7 +55,7 @@ def test_ntfy_ignores_invalid_json():
 def test_ntfy_returns_none_on_request_failure():
     with patch(
         "requests.get",
-        side_effect=Exception("Network error")
+        side_effect=requests.RequestException("Network error")
     ):
 
         client = NtfyClient("test")

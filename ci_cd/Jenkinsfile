@@ -15,6 +15,14 @@ pipeline {
             }
         }
 
+        stage('Lint') {
+            steps {
+                sh '''
+                    docker run --rm videofactory ruff check .
+                '''
+            }
+        }
+
         stage('Tests') {
             steps {
                 sh '''
@@ -31,12 +39,12 @@ pipeline {
     post {
         success {
             echo 'CI pipeline uspešno završen.'
-            echo 'Docker image je uspešno napravljen, svi testovi su prošli i coverage je najmanje 70%.'
+            echo 'Docker image je uspešno napravljen, Ruff lint je prošao, svi testovi su prošli i coverage je najmanje 70%.'
         }
 
         failure {
             echo 'CI pipeline neuspešan.'
-            echo 'Proveri Docker build, testove ili code coverage.'
+            echo 'Proveri Docker build, Ruff lint ili testove.'
         }
     }
 }
