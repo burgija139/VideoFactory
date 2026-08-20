@@ -1,168 +1,458 @@
-# 🎬 Chess Video AI Generator
+Naravno. Izbacio bih stvari koje nisu ključne za predstavljanje projekta, a README bih više usmerio na **cloud arhitekturu, automatizaciju, AI generisanje i CI**, pošto je to sada bitan deo diplomskog rada.
 
-A system that generates viral chess short-form videos using AI (Gemini), chess engine logic, and automated video rendering pipeline.
+Evo kompletne verzije koju možeš direktno da staviš kao `README.md`:
+
+# 🎬 VideoFactory
+
+**VideoFactory** is a modular cloud-oriented system for automated generation of short-form multimedia content.
+
+The system combines AI-generated content, chess puzzle processing, automated audio and video generation, cloud services, containerization, and CI automation into a single processing pipeline.
+
+The project is designed around a modular architecture that allows additional content-generation plugins and processing components to be added without changing the core pipeline.
 
 ---
 
-## 🚀 Features
+## 🚀 Overview
 
-- ♟ Chess puzzle processing (python-chess)
-- 🎬 Automated video generation (FFmpeg pipeline)
-- 🧠 AI-driven video planning (Google Gemini)
-- 📝 Structured timeline generation (Pydantic schema)
-- 🎵 Audio event synchronization
-- 🗄 PostgreSQL integration for data storage
-- 🎨 Custom video overlays (Pillow rendering system)
+The main goal of VideoFactory is to automate the complete process of generating a short-form video.
+
+A typical generation pipeline consists of:
+
+```text
+Chess Puzzle
+     ↓
+AI Content Generation
+     ↓
+Video Plan
+     ↓
+Text-to-Speech
+     ↓
+Chess Rendering
+     ↓
+Audio Synchronization
+     ↓
+FFmpeg Processing
+     ↓
+Final MP4 Video
+```
+
+The generated content can be processed using both local and cloud resources, allowing computationally demanding components to be separated from the main application.
 
 ---
 
 # 🧱 Architecture
 
-AIContextGenerator (Gemini)
-↓
-VideoPlanSchema (Pydantic)
-↓
-ChessVideoBuilder
-├── BoardRenderer (SVG → PNG)
-├── OverlayRenderer (Pillow UI layer)
-├── AudioBuilder (numpy wave synthesis)
-├── FFmpeg video stream (frames → mp4)
-└── Post-processing merge (audio + video)
-↓
-Final MP4 Output
-↓
-PostgreSQL (optional storage)
+The application follows a modular architecture divided into several logical layers.
+
+```text
+                    ┌─────────────────────┐
+                    │      GitHub         │
+                    │   Source Control   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │       Jenkins       │
+                    │     CI Pipeline     │
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │   Docker Image      │
+                    │    VideoFactory     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │    Core Pipeline    │
+                    └──────────┬──────────┘
+                               │
+             ┌─────────────────┼─────────────────┐
+             ▼                 ▼                 ▼
+      ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
+      │ Chess Plugin│   │ TTS Service │   │ AI Services │
+      └──────┬──────┘   └─────────────┘   └──────┬──────┘
+             │                                    │
+             └────────────────┬───────────────────┘
+                              ▼
+                    ┌─────────────────────┐
+                    │   Video Renderer    │
+                    │      FFmpeg         │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │    Final Video      │
+                    │       MP4           │
+                    └─────────────────────┘
+
+       Cloud Infrastructure
+       ├── Supabase PostgreSQL
+       └── Google Colab GPU
+```
 
 ---
 
-# ⚙️ Features
+# ☁️ Cloud Architecture
 
-## ♟ Chess Engine
+Cloud services are used to separate application logic from infrastructure-dependent resources.
 
-- Uses `python-chess`
-- Supports FEN parsing
-- Move validation and game simulation
-- Detects:
-  - captures
-  - check
-  - castling
+### Supabase
+
+Supabase provides the PostgreSQL database used for storing application data such as chess puzzles and information required during video generation.
+
+### Google Colab
+
+Google Colab is used as a cloud GPU environment for computationally demanding AI and text-to-speech processing.
+
+This allows the main application to remain lightweight while expensive processing can be executed on remote computing resources.
+
+### Local / Containerized Application
+
+The main VideoFactory application can be packaged into a Docker container. This provides a reproducible runtime environment and simplifies deployment and execution.
 
 ---
 
-## 🧠 AI Director (Gemini)
+# 🤖 AI Content Generation
 
-AI generates:
+Google Gemini is used as the AI component responsible for generating the structure and textual content of the video.
+
+The AI generates information such as:
 
 - video title
-- pacing strategy
-- intro duration
-- full timeline (intro → timer → moves → ending)
-- retention hooks
+- introduction
+- dialogue
+- video pacing
+- timeline elements
+- ending content
 
-Enforced via structured schema:
+The generated response is validated using Pydantic models before being passed to the rendering pipeline.
 
-- Pydantic validation
-- strict timeline rules
-- max 8-word captions
-- forced viral pacing logic
+This ensures that AI-generated data follows the structure expected by the application.
 
 ---
 
-## 🎬 Video Rendering
+# ♟️ Chess Processing
 
-- FFmpeg pipe streaming (real-time frame encoding)
-- 1080x1920 vertical format (TikTok / Shorts)
-- Gaussian blurred chess background
-- dynamic overlays (rating, title, text)
+The chess plugin uses `python-chess` for processing chess positions and moves.
 
----
+The system supports:
 
-## 🎨 Overlay System
+- FEN position parsing
+- chess move validation
+- game-state simulation
+- move detection
+- captures
+- checks
+- castling
 
-Built with Pillow:
+Chess puzzles are retrieved from the PostgreSQL database and passed through the content-generation pipeline.
 
-- dynamic text rendering
-- chessboard overlay
-- timer circle animation
-- pause/reveal screens
-- thematic coloring per video type
-
----
-
-## 🔊 Audio System
-
-- numpy-based audio mixing
-- event-driven sound system:
-  - move
-  - capture
-  - check
-  - castle
-- precise timestamp synchronization
+The plugin architecture allows chess-specific functionality to remain separated from the core video-generation system.
 
 ---
 
-## 🗄 Database (PostgreSQL)
+# 🎬 Video Generation
 
-Used for:
+The video-generation pipeline combines generated content, chess rendering and audio into a final vertical video.
 
-- storing generated puzzles
-- storing video metadata
-- tracking processing history
+The rendering process includes:
+
+- chessboard rendering
+- dynamic text overlays
+- video titles
+- puzzle ratings
+- timers
+- move animations
+- audio effects
+- generated speech
+
+Frames are streamed directly into FFmpeg instead of being stored individually as image files.
+
+The final output is generated in a vertical format suitable for short-form platforms such as YouTube Shorts and TikTok.
 
 ---
 
-# 📦 Installation
+# 🔊 Audio and TTS
 
-## 1. Clone repository
+The audio subsystem combines generated speech with chess-related sound effects.
 
-```bash
-git clone <repo-url>
-cd chess-video-ai
+Supported chess events include:
+
+- move
+- capture
+- check
+- castling
+
+Audio events are synchronized using timestamps and combined with the generated video during the final FFmpeg processing stage.
+
+The text-to-speech component is integrated as a separate infrastructure service, allowing the TTS implementation to be replaced without modifying the chess and video-generation logic.
+
+---
+
+# 🗄️ Database
+
+The system uses PostgreSQL for persistent application data.
+
+The database is used primarily for:
+
+- storing chess puzzles
+- retrieving puzzles for processing
+- storing information required during generation
+- maintaining application data used by the processing pipeline
+
+The cloud database is provided through Supabase.
+
+---
+
+# 🐳 Docker
+
+The application is containerized using Docker.
+
+The Docker image contains the required Python dependencies and system dependencies such as FFmpeg.
+
+This provides a consistent environment for:
+
+- local development
+- automated testing
+- CI execution
+- application execution
+
+The same Docker image can therefore be used throughout the development and CI workflow.
+
+---
+
+# 🔄 Continuous Integration
+
+The project contains a Jenkins CI pipeline that automatically verifies the application after changes are pushed to the GitHub repository.
+
+The current CI pipeline consists of:
+
+```text
+Git Push
+   ↓
+GitHub
+   ↓
+Jenkins
+   ↓
+Checkout
+   ↓
+Docker Build
+   ↓
+Tests + Coverage
+   ↓
+Ruff Static Analysis
+   ↓
+SUCCESS
 ```
 
-## 2. Install Python dependecies
+The pipeline executes the complete test suite inside the Docker environment.
 
-```bash
-pip install -r requirements.txt
-```
+The project currently contains unit and integration tests executed using `pytest`.
 
-## 3. Install system dependencies
+Code coverage is measured using `pytest-cov`.
 
--Linux
+Static code analysis is performed using `Ruff`.
 
-```bash
-sudo apt install ffmpeg
-```
-
--Mac
-
-```bash
-brew install ffmpeg
-```
-
--Windows
-Download FFmpeg
-Add to PATH
+This ensures that changes are automatically checked before they are considered valid.
 
 ---
 
-# Environment setup
+# 🧪 Testing
 
-- GEMINI_API_KEY=your_api_key_here
+The project contains both unit and integration tests.
+
+Tests cover important components including:
+
+- AI content generation
+- pipeline execution
+- plugin loading
+- chess processing
+- video planning
+- TTS
+- URL provider
+- voice registry
+- video generation components
+
+The current test suite contains **47 tests**.
+
+Example:
+
+```bash
+docker run --rm videofactory python3.11 -m pytest
+```
+
+Coverage can be generated with:
+
+```bash
+docker run --rm videofactory python3.11 -m pytest --cov=. --cov-report=term-missing
+```
+
+The current coverage is approximately **75%**.
 
 ---
 
-# ▶️ Running the project
+# 🔍 Code Quality
+
+Ruff is used for static analysis and code-quality checks.
+
+Run locally with:
 
 ```bash
-python main.py
+docker run --rm videofactory ruff check .
+```
+
+The same check is executed as part of the Jenkins CI pipeline.
+
+---
+
+# 📁 Project Structure
+
+```text
+VideoFactory/
+│
+├── app/
+│   └── main.py
+│
+├── core/
+│   ├── pipeline/
+│   └── plugin_system/
+│
+├── infrastructure/
+│   ├── db/
+│   └── tts/
+│
+├── plugins/
+│   └── chess/
+│       ├── audio/
+│       ├── content_generation/
+│       ├── dto/
+│       ├── repository/
+│       ├── service/
+│       └── video/
+│
+├── tests/
+│   ├── unit/
+│   └── integration/
+│
+├── ci_cd/
+│   ├── Dockerfile
+│   ├── Jenkinsfile
+│   └── docker-compose.yml
+│
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-# ⚠️ Notes
+# ⚙️ Requirements
 
-- Requires FFmpeg installed
-- Requires valid Gemini API key
-- Designed for vertical video format (TikTok / YouTube Shorts)
-- CPU-only compatible (no GPU required)
+The project requires:
+
+- Python 3.11+
+- Docker
+- FFmpeg
+- PostgreSQL / Supabase
+- Google Gemini API key
+- TTS service configuration
+
+For CI execution:
+
+- Jenkins
+- GitHub repository
+- Docker access from Jenkins
+
+---
+
+# 🔐 Environment Variables
+
+Create a `.env` file containing the required configuration.
+
+Example:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+DATABASE_URL=your_database_url
+MY_TTS_CHANNEL=your_tts_channel
+```
+
+Do not commit the `.env` file or API keys to the repository.
+
+---
+
+# ▶️ Running with Docker
+
+Build the application image:
+
+```bash
+docker build -f ci_cd/Dockerfile -t videofactory .
+```
+
+Run the application:
+
+```bash
+docker run --rm -it --env-file .env videofactory python3.11 -m app.main
+```
+
+Run the test suite:
+
+```bash
+docker run --rm videofactory python3.11 -m pytest
+```
+
+Run coverage:
+
+```bash
+docker run --rm videofactory python3.11 -m pytest --cov=. --cov-report=term-missing
+```
+
+Run static analysis:
+
+```bash
+docker run --rm videofactory ruff check .
+```
+
+---
+
+# 📊 Current CI Status
+
+The project currently includes:
+
+| Component                            | Status |
+| ------------------------------------ | ------ |
+| Modular architecture                 | ✅     |
+| Chess processing                     | ✅     |
+| AI content generation                | ✅     |
+| TTS integration                      | ✅     |
+| Automated video generation           | ✅     |
+| PostgreSQL / Supabase                | ✅     |
+| Docker                               | ✅     |
+| Unit tests                           | ✅     |
+| Integration tests                    | ✅     |
+| Code coverage                        | ✅     |
+| Ruff static analysis                 | ✅     |
+| Jenkins CI                           | ✅     |
+| Automated CD / production deployment | ⏳     |
+
+Continuous deployment is intentionally not included because the current project does not use a permanent production environment.
+
+---
+
+# 🚧 Future Improvements
+
+The architecture allows the system to be extended with:
+
+- additional content-generation plugins
+- additional multimedia formats
+- additional AI providers
+- dedicated cloud GPU infrastructure
+- object storage for generated videos
+- production deployment
+- automated continuous deployment
+- horizontal scaling of video-generation workers
+
+---
+
+# 📄 Project
+
+**VideoFactory** is a university diploma project focused on the application of cloud computing, automation and modular software architecture to automated multimedia content generation.
