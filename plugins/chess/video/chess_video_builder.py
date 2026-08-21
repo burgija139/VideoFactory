@@ -1,9 +1,10 @@
+# plugins/chess/video/chess_video_builder.py
+
 import os
 import subprocess
 
 import chess
 
-from infrastructure.storage.supabase_uploader import SupabaseUploader
 from plugins.chess.audio.move_audio_builder import MoveAudioBuilder
 from plugins.chess.dto.audio_item import AudioItem
 from plugins.chess.video.board_renderer import BoardRenderer
@@ -16,99 +17,124 @@ class ChessVideoBuilder:
         self.board_renderer = BoardRenderer()
         self.overlay_renderer = OverlayRenderer()
         self.move_audio_builder = MoveAudioBuilder(sounds_path)
-        self.uploader = SupabaseUploader()
 
-    def create(self, context, audio_plan: list[AudioItem], output_file="final.mp4"):
-        # =====================================
-        # EXTRACT CONTEXT & SETUP TIMELINE
-        # =====================================
+    def create(
+        self,
+        context,
+        audio_plan: list[AudioItem],
+        output_file="final.mp4"
+    ):
         puzzle = context.puzzle
         video_plan = context.video_plan
 
-        # ---- AUTOMATSKO RUTERIRANJE U SHORTS/CHESS ----
-        # Nalazimo koren projekta (VideoFactory) na osnovu lokacije ovog fajla
         current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Idemo 3 nivoa iz plugins/chess/video/ se penje do VideoFactory root-a
         base_dir = os.path.dirname(
             os.path.dirname(
                 os.path.dirname(current_dir)
             )
         )
 
-        # Definišemo i kreiramo shorts/chess folder ako ne postoji
-        output_dir = os.path.join(base_dir, "shorts", "chess")
+        output_dir = os.path.join(
+            base_dir,
+            "shorts",
+            "chess"
+        )
+
         os.makedirs(output_dir, exist_ok=True)
 
-        # Ako je prosleđeno samo ime fajla (npr. "final.mp4" ili "000a9.mp4"),
-        # spajamo ga sa folderom
         if not os.path.isabs(output_file):
-            output_file = os.path.join(output_dir, output_file)
-
-        # ===============================================
+            output_file = os.path.join(
+                output_dir,
+                output_file
+            )
 
         move_list = puzzle.moves.split()
 
         fps = 30
-        video_title = video_plan.title if video_plan.title else "Chess Puzzle"
 
-        intro_duration = float(video_plan.intro_seconds)
+        video_title = (
+            video_plan.title
+            if video_plan.title
+            else "Chess Puzzle"
+        )
+
+        intro_duration = float(
+            video_plan.intro_seconds
+        )
+
         timer_duration = (
             float(video_plan.timer_duration)
             if video_plan.timer_enabled
             else 0.0
         )
 
-        # =================================================================
-        # RE-TIMING AUDIO PLAN: SEKVENCIJALNO REĐANJE (BEZ PREKLAPANJA)
-        # =================================================================
-        current_speech_pointer = intro_duration + timer_duration
+        current_speech_pointer = (
+            intro_duration + timer_duration
+        )
 
         for index, item in enumerate(audio_plan):
-            original_duration = item.end - item.start
+            original_duration = (
+                item.end - item.start
+            )
 
             if index == 0:
                 item.start = 0.5
-                item.end = item.start + original_duration
+                item.end = (
+                    item.start + original_duration
+                )
             else:
-                item.start = current_speech_pointer + 0.2
-                item.end = item.start + original_duration
+                item.start = (
+                    current_speech_pointer + 0.2
+                )
+
+                item.end = (
+                    item.start + original_duration
+                )
+
                 current_speech_pointer = item.end
 
-        # =================================================================
-        # GENERATE CHESS AUDIO EVENTS
-        # =================================================================
         events = []
-        simulated_board = chess.Board(puzzle.fen)
+
+        simulated_board = chess.Board(
+            puzzle.fen
+        )
+
         move_timestamps = []
 
-        # DYNAMIC CHECK: Ako je show_moves isključen (statični kviz),
-        # praznimo move_list
         if not video_plan.show_moves:
             move_list = []
+
             print(
-                "[🎮 ChessVideoBuilder] Format detektovan: "
+                "[🎮 ChessVideoBuilder] "
+                "Format detektovan: "
                 "Statični izazov (show_moves=False)."
             )
 
-        # Šahovski potezi vizuelno kreću tačno nakon introdakšna i tajmera
-        chess_start_time = intro_duration + timer_duration
+        chess_start_time = (
+            intro_duration + timer_duration
+        )
 
-        # 🎯 FIKSIRANO: Negativni nudge od -0.15s kompenzuje
-        # audio-video desinhronizaciju u plejerima
         audio_nudge = -0.15
 
         for i, move in enumerate(move_list):
-            # VIZUELNI tajming: Svaki potez na tabli se dešava
-            # na svake tačno 2.0 sekunde
-            visual_move_time = chess_start_time + (i * 2.0)
+            visual_move_time = (
+                chess_start_time + (i * 2.0)
+            )
 
-            # AUDIO tajming: Zvuk povlačenja puštamo mrvicu ranije
-            audio_move_time = visual_move_time + audio_nudge
+            audio_move_time = (
+                visual_move_time + audio_nudge
+            )
 
             move_obj = chess.Move.from_uci(move)
-            is_capture = simulated_board.is_capture(move_obj)
-            is_castle = simulated_board.is_castling(move_obj)
+
+            is_capture = (
+                simulated_board.is_capture(move_obj)
+            )
+
+            is_castle = (
+                simulated_board.is_castling(move_obj)
+            )
 
             simulated_board.push(move_obj)
 
@@ -132,8 +158,6 @@ class ChessVideoBuilder:
                 "board_state": simulated_board.copy()
             })
 
-        # Ponovo preračunavamo ukupno trajanje da uhvati
-        # sve fiksne poteze i završetak
         last_move_end = (
             chess_start_time
             + (len(move_list) * 2.0)
@@ -145,11 +169,10 @@ class ChessVideoBuilder:
             last_move_end
         )
 
-        total_frames = int(total_duration * fps)
+        total_frames = int(
+            total_duration * fps
+        )
 
-        # =====================================
-        # FFMPEG VIDEO PIPE (FREJM PO FREJMU)
-        # =====================================
         temp_video = "temp_video.mp4"
         temp_audio = "temp_audio.wav"
 
@@ -188,7 +211,9 @@ class ChessVideoBuilder:
                     (
                         x
                         for x in audio_plan
-                        if x.start <= current_time <= x.end
+                        if x.start
+                        <= current_time
+                        <= x.end
                     ),
                     None
                 )
@@ -206,9 +231,8 @@ class ChessVideoBuilder:
 
                 elif (
                     video_plan.timer_enabled
-                    and current_time < (
-                        intro_duration + timer_duration
-                    )
+                    and current_time
+                    < intro_duration + timer_duration
                 ):
                     state = "timer"
 
@@ -217,22 +241,39 @@ class ChessVideoBuilder:
                     )
 
                     timer_text = str(
-                        int(timer_duration - time_passed_in_timer)
+                        int(
+                            timer_duration
+                            - time_passed_in_timer
+                        )
                     )
 
                 else:
                     state = "moves"
 
-                active_board = chess.Board(puzzle.fen)
+                active_board = chess.Board(
+                    puzzle.fen
+                )
+
                 last_move_obj = None
 
-                for m_idx, m_data in enumerate(move_timestamps):
-                    if current_time >= m_data["trigger_time"]:
-                        active_board = m_data["board_state"]
-                        last_move_obj = m_data["move_obj"]
+                for m_idx, m_data in enumerate(
+                    move_timestamps
+                ):
+                    if (
+                        current_time
+                        >= m_data["trigger_time"]
+                    ):
+                        active_board = (
+                            m_data["board_state"]
+                        )
+
+                        last_move_obj = (
+                            m_data["move_obj"]
+                        )
 
                         if (
-                            m_idx == len(move_timestamps) - 1
+                            m_idx
+                            == len(move_timestamps) - 1
                             and not active_speech
                         ):
                             ending_item = next(
@@ -245,11 +286,15 @@ class ChessVideoBuilder:
                             )
 
                             if ending_item:
-                                dinamicki_tekst = ending_item.text
+                                dinamicki_tekst = (
+                                    ending_item.text
+                                )
 
-                board_image = self.board_renderer.render(
-                    active_board,
-                    last_move_obj
+                board_image = (
+                    self.board_renderer.render(
+                        active_board,
+                        last_move_obj
+                    )
                 )
 
                 timer_current = None
@@ -257,21 +302,27 @@ class ChessVideoBuilder:
 
                 if state == "timer":
                     timer_total = timer_duration
+
                     timer_current = (
                         timer_duration
-                        - (current_time - intro_duration)
+                        - (
+                            current_time
+                            - intro_duration
+                        )
                     )
 
-                frame_bytes = self.overlay_renderer.render(
-                    board_image=board_image,
-                    title=video_title,
-                    rating=puzzle.rating,
-                    context_text=dinamicki_tekst,
-                    video_type=context.video_type,
-                    state=state,
-                    timer_text=timer_text,
-                    timer_current=timer_current,
-                    timer_total=timer_total
+                frame_bytes = (
+                    self.overlay_renderer.render(
+                        board_image=board_image,
+                        title=video_title,
+                        rating=puzzle.rating,
+                        context_text=dinamicki_tekst,
+                        video_type=context.video_type,
+                        state=state,
+                        timer_text=timer_text,
+                        timer_current=timer_current,
+                        timer_total=timer_total
+                    )
                 )
 
                 video_proc.stdin.write(frame_bytes)
@@ -282,9 +333,6 @@ class ChessVideoBuilder:
 
             video_proc.wait()
 
-        # =====================================
-        # AUDIO BUILD (Miks zvuka poteza + TTS)
-        # =====================================
         self.move_audio_builder.build(
             events=events,
             audio_plan=audio_plan,
@@ -292,37 +340,24 @@ class ChessVideoBuilder:
             output_file=temp_audio
         )
 
-        # =====================================
-        # MERGE VIDEO + AUDIO U FINALNI MP4
-        # =====================================
-        subprocess.run([
-            "ffmpeg",
-            "-y",
-            "-i",
-            temp_video,
-            "-i",
-            temp_audio,
-            "-c:v",
-            "copy",
-            "-c:a",
-            "aac",
-            "-shortest",
-            output_file
-        ], check=True)
-
-        # =====================================
-        # UPLOAD VIDEO NA SUPABASE STORAGE
-        # =====================================
-        remote_path = f"chess/{os.path.basename(output_file)}"
-
-        self.uploader.upload_video(
-            local_file=output_file,
-            remote_path=remote_path
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                temp_video,
+                "-i",
+                temp_audio,
+                "-c:v",
+                "copy",
+                "-c:a",
+                "aac",
+                "-shortest",
+                output_file
+            ],
+            check=True
         )
 
-        # =====================================
-        # CLEANUP TEMP FILES
-        # =====================================
         if os.path.exists(temp_video):
             os.remove(temp_video)
 
@@ -330,6 +365,7 @@ class ChessVideoBuilder:
             os.remove(temp_audio)
 
         print(
-            "🎉 Video uspešno kreiran i uploadovan: "
-            f"{output_file} -> {remote_path}"
+            f"🎬 Video uspešno kreiran: {output_file}"
         )
+
+        return output_file

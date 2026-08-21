@@ -13,5 +13,7 @@ class PipelineRunner:
         plugin = self.loader.load(plugin_name, tts_engine=self.tts_engine)
 
         content = plugin.generate_content()
+        
+        output_file = plugin.build_video(content)
 
-        plugin.build_video(content)
+        plugin.upload(output_file)

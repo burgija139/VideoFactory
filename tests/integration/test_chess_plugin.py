@@ -12,7 +12,7 @@ def create_content():
         fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
         moves="e2e4 e7e5",
         rating=1200,
-        themes="opening"
+        themes="opening",
     )
 
     plan = VideoPlan(
@@ -23,9 +23,9 @@ def create_content():
                 text="Find the best move",
                 type="intro",
                 character="naruto",
-                emotion="excited"
+                emotion="excited",
             )
-        ]
+        ],
     )
 
     content = MagicMock()
@@ -45,10 +45,11 @@ def test_chess_plugin_generate_content():
         "plugins.chess.chess_plugin.ChessVideoBuilder"
     ), patch(
         "plugins.chess.chess_plugin.DialogueEngine"
+    ), patch(
+        "plugins.chess.chess_plugin.SupabaseUploader"
     ):
 
         service = service_class.return_value
-
         content = create_content()
 
         service.get_content.return_value = content
@@ -69,7 +70,7 @@ def test_chess_plugin_build_video_pipeline():
     audio_plan = [
         MagicMock(
             start=0,
-            end=2
+            end=2,
         )
     ]
 
@@ -79,7 +80,9 @@ def test_chess_plugin_build_video_pipeline():
         "plugins.chess.chess_plugin.ChessVideoBuilder"
     ) as builder_class, patch(
         "plugins.chess.chess_plugin.DialogueEngine"
-    ) as dialogue_class:
+    ) as dialogue_class, patch(
+        "plugins.chess.chess_plugin.SupabaseUploader"
+    ):
 
         dialogue = dialogue_class.return_value
         dialogue.build_dialogue.return_value = audio_plan
@@ -90,11 +93,40 @@ def test_chess_plugin_build_video_pipeline():
 
     dialogue.build_dialogue.assert_called_once_with(
         video_plan=content.video_plan,
-        output_dir="temp_audio"
+        output_dir="temp_audio",
     )
 
     builder_class.return_value.create.assert_called_once_with(
         context=content,
         audio_plan=audio_plan,
-        output_file="opening_guess_integration-test.mp4"
+        output_file="opening_guess_integration-test.mp4",
     )
+
+
+def test_chess_plugin_upload():
+    fake_tts = MagicMock()
+
+    with patch(
+        "plugins.chess.chess_plugin.ChessService"
+    ), patch(
+        "plugins.chess.chess_plugin.SupabaseUploader"
+    ) as uploader_class, patch(
+        "plugins.chess.chess_plugin.ChessVideoBuilder"
+    ), patch(
+        "plugins.chess.chess_plugin.DialogueEngine"
+    ):
+
+        uploader = uploader_class.return_value
+
+        plugin = ChessPlugin(fake_tts)
+
+        result = plugin.upload(
+            "shorts/chess/opening_guess_integration-test.mp4"
+        )
+
+    uploader.upload_video.assert_called_once_with(
+        local_file="shorts/chess/opening_guess_integration-test.mp4",
+        remote_path="chess/opening_guess_integration-test.mp4",
+    )
+
+    assert result is None
