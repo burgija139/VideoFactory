@@ -44,53 +44,13 @@ The generated content can be processed using both local and cloud resources, all
 
 The application follows a modular architecture divided into several logical layers.
 
-```text
-                    ┌─────────────────────┐
-                    │      GitHub         │
-                    │   Source Control   │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │       Jenkins       │
-                    │     CI Pipeline     │
-                    └──────────┬──────────┘
-                               │
-                    ┌──────────▼──────────┐
-                    │   Docker Image      │
-                    │    VideoFactory     │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │    Core Pipeline    │
-                    └──────────┬──────────┘
-                               │
-             ┌─────────────────┼─────────────────┐
-             ▼                 ▼                 ▼
-      ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-      │ Chess Plugin│   │ TTS Service │   │ AI Services │
-      └──────┬──────┘   └─────────────┘   └──────┬──────┘
-             │                                    │
-             └────────────────┬───────────────────┘
-                              ▼
-                    ┌─────────────────────┐
-                    │   Video Renderer    │
-                    │      FFmpeg         │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │    Final Video      │
-                    │       MP4           │
-                    └─────────────────────┘
+![VideoFactory System Architecture](docs/images/architecture.png)
 
-       Cloud Infrastructure
-       ├── Supabase PostgreSQL
-       └── Google Colab GPU
-```
+The architecture is organized into presentation, application, data, external service, and output layers. The main application logic is implemented within the VideoFactory Python application, while external cloud services provide persistent storage, AI processing, and cloud-based text-to-speech capabilities.
 
----
+The main processing flow starts with retrieving a chess puzzle from the Supabase PostgreSQL database. The application then uses Google Gemini to generate the video plan and F5-TTS running in Google Colab to generate speech audio. The generated audio and chess data are passed to the video-generation pipeline, where the video frames, overlays, and audio are combined using FFmpeg.
+
+The final MP4 video is uploaded to Supabase Storage, making the generated content available independently of the local execution environment.
 
 # ☁️ Cloud Architecture
 
