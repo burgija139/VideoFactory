@@ -1,16 +1,40 @@
 services:
-  videofactory:
+  api:
     build:
       context: ..
       dockerfile: ci_cd/Dockerfile
 
-    container_name: videofactory
+    container_name: videofactory-api
 
     env_file:
       - ../.env
 
+    command: python3.11 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+    ports:
+      - "8000:8000"
+
     volumes:
       - ../shorts/chess:/app/shorts/chess
+
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: ci_cd/Dockerfile
+
+    container_name: videofactory-worker
+
+    env_file:
+      - ../.env
+
+    command: python3.11 -m app.worker
+
+    volumes:
+      - ../shorts/chess:/app/shorts/chess
+
+    restart: unless-stopped
 
   jenkins:
     build:

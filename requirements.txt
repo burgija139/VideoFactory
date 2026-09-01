@@ -17,6 +17,10 @@ gradio_client
 # ENV / CONFIG
 python-dotenv
 
+# API
+fastapi
+uvicorn
+
 # TESTING
 pytest
 pytest-cov
